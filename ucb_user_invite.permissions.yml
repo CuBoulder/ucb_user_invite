@@ -1,0 +1,8 @@
+administer user invite:
+  title: Administer User Invite
+  description: 'Enables editing of the allowed roles and templates of user invites.'
+  restrict access: true
+
+invite users:
+  title: Invite users
+  description: 'Permits inviting a user to log in to the site, and granting them an allowed role.'

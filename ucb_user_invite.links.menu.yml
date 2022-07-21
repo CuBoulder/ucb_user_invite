@@ -1,0 +1,11 @@
+ucb_user_invite.invite_form:
+  title: Invite users
+  description: 'Invite users to log in, and grant them special permissions.'
+  route_name: ucb_user_invite.invite_form
+  parent: entity.user.collection
+
+ucb_user_invite.settings_form:
+  title: User invite settings
+  description: 'Change the allowed roles and templates of user invites.'
+  route_name: ucb_user_invite.settings_form
+  parent: user.admin_index

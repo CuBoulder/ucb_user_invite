@@ -1,0 +1,6 @@
+{
+	"name": "cu-boulder/ucb_user_invite",
+	"description": "Allows users with permissions to invite any CU Boulder user to log in to the site with a custom role.",
+	"license": "MIT",
+	"type": "drupal-custom-module"
+}

@@ -1,0 +1,21 @@
+ucb_user_invite.invite_form:
+  path: '/admin/people/invite'
+  defaults:
+    _form: '\Drupal\ucb_user_invite\Form\InviteForm'
+    _title: Invite users
+    _description: 'Invite users to log in, and grant them special permissions.'
+  requirements:
+    _permission: invite users
+  options:
+    _admin_route: true
+
+ucb_user_invite.settings_form:
+  path: '/admin/config/people/invite'
+  defaults:
+    _form: '\Drupal\ucb_user_invite\Form\SettingsForm'
+    _title: User invite settings
+    _description: 'Change the allowed roles and templates of user invites.'
+  requirements:
+    _permission: administer user invite
+  options:
+    _admin_route: true

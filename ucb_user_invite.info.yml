@@ -1,0 +1,8 @@
+name: CU Boulder User Invite
+description: 'Allows users with permissions to invite any CU Boulder user to log in to the site with a custom role.'
+core_version_requirement: ^8.8 || ^9
+type: module
+version: '1.0'
+package: CU Boulder
+dependencies:
+  - user
