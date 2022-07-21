@@ -16,11 +16,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SettingsForm extends ConfigFormBase {
 
 	/**
-     * The user invite helper service defined in this module.
-     *
-     * @var \Drupal\ucb_user_invite\UserInviteHelperService
-     */
-    protected $helper;
+	 * The user invite helper service defined in this module.
+	 *
+	 * @var \Drupal\ucb_user_invite\UserInviteHelperService
+	 */
+	protected $helper;
 
 	/**
 	 * Constructs a SettingsForm object.
@@ -145,8 +145,6 @@ class SettingsForm extends ConfigFormBase {
 			->set('roles', $form_state->getValue('roles'))
 			->set('default_role', $form_state->getValue('default_role'))
 			->set('default_custom_message', $form_state->getValue('default_custom_message'))
-			->set('days_valid_for', $form_state->getValue('days_valid_for'))
-			->set('delete_old_invites', $form_state->getValue('delete_old_invites'))
 			->set('invite_subject', $form_state->getValue('invite_subject'))
 			->set('invite_template', $form_state->getValue('invite_template'))
 			->set('confirmation_subject', $form_state->getValue('confirmation_subject'))

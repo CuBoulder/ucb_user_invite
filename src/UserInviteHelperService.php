@@ -50,11 +50,11 @@ class UserInviteHelperService {
 	protected $messenger;
 
 	/**
-    * The url generator.
-    *
-    * @var \Drupal\Core\Routing\UrlGeneratorInterface
-    */
-    protected $urlGenerator;
+	 * The url generator.
+	 *
+	 * @var \Drupal\Core\Routing\UrlGeneratorInterface
+	 */
+	protected $urlGenerator;
 
 	/**
 	 * The email validator used for validating full email addresses.
