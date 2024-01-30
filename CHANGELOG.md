@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### Fixes error on sending invites
+  Resolves CuBoulder/ucb_user_invite#4
+---
+
 - ### Adds `CHANGELOG.MD` and workflows; updates `core_version_requirement` to indicate D10 compatibility
   Resolves CuBoulder/ucb_user_invite#2
 ---
