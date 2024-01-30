@@ -265,7 +265,7 @@ class UserInviteHelperService {
 	 */
 	protected function createAccount($invitedUser, $invitedAddress, $roleId) {
 		$storage = $this->entityTypeManager->getStorage($this->entityTypeRepository->getEntityTypeFromClass(User::class));
-		$existingUserIds = $storage->getQuery()->condition('name', $invitedUser)->execute(); // Comes back as an array but there should be only one
+		$existingUserIds = $storage->getQuery()->accessCheck(FALSE)->condition('name', $invitedUser)->execute(); // Comes back as an array but there should be only one
 		if($existingUserIds) {
 			$existingUser = User::load(array_keys($existingUserIds)[0]);
 			if($roleId != Role::AUTHENTICATED_ID) // Trying to add `authenticated` role results in error, this avoids it
