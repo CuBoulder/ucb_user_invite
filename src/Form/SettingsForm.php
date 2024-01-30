@@ -8,6 +8,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\ucb_user_invite\UserInviteHelperService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * The administration form for the User Invite module.
+ */
 class SettingsForm extends ConfigFormBase {
 
   /**
@@ -157,4 +160,5 @@ class SettingsForm extends ConfigFormBase {
       $form_state->setErrorByName('default_role', $this->t('Default role can only be one of the roles selected to invite.'));
     }
   }
+
 }

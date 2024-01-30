@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\ucb_user_invite\UserInviteHelperService.
- */
-
 namespace Drupal\ucb_user_invite;
 
 use Drupal\Component\Utility\EmailValidatorInterface;
@@ -19,6 +14,9 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
 
+/**
+ * Contains helper functions used by the form classes.
+ */
 class UserInviteHelperService {
 
   /**
@@ -72,15 +70,15 @@ class UserInviteHelperService {
 
   /**
    * The entity type manager, used in the process of checking for an existing user account.
-   * 
+   *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-  
+
 
   /**
    * The entity type repository, used in the process of checking for an existing user account.
-   * 
+   *
    * @var \Drupal\Core\Entity\EntityTypeRepositoryInterface
    */
   protected $entityTypeRepository;
@@ -100,11 +98,11 @@ class UserInviteHelperService {
    *   The url generator.
    * @param \Drupal\Core\Extension\EmailValidatorInterface $emailValidator
    *   The email validator used for validating full email addresses.
-   * @param \Drupal\Core\Mail\MailManagerInterface
+   * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
    *   The mail manager used for sending emails.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager, used in the process of checking for an existing user account.
-   * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface
+   * @param \Drupal\Core\Entity\EntityTypeRepositoryInterface $entityTypeRepository
    *   The entity type repository, used in the process of checking for an existing user account.
    */
   public function __construct(
@@ -130,6 +128,8 @@ class UserInviteHelperService {
   }
 
   /**
+   * Gets the machine name of the CU Boulder User Invite configuration.
+   *
    * @return string
    *   The machine name of the CU Boulder User Invite configuration.
    */
@@ -138,6 +138,8 @@ class UserInviteHelperService {
   }
 
   /**
+   * Gets the CU Boulder User Invite configuration.
+   *
    * @return \Drupal\Core\Config\Config
    *   The read-only CU Boulder User Invite configuration, to be used locally.
    */
@@ -146,32 +148,42 @@ class UserInviteHelperService {
   }
 
   /**
+   * Gets a mapped array of all user roles available on this Drupal instance.
+   *
    * @return array
    *   id -> label mapping of all roles for invites.
    */
   public function getAllRoleNames() {
-    $userRoles = Role::loadMultiple(); // Load all user role entites
-    unset($userRoles[Role::ANONYMOUS_ID]); // Remove the anonymous role
+    // Load all user role entites.
+    $userRoles = Role::loadMultiple();
+    // Remove the anonymous role.
+    unset($userRoles[Role::ANONYMOUS_ID]);
     return array_map(
-      function(Role $roleEntity) {
-        return $roleEntity->label(); // Convert the role entity to a string
+      function (Role $roleEntity) {
+        // Convert the role entity to a string.
+        return $roleEntity->label();
       }, $userRoles);
   }
 
   /**
+   * Gets the allowed role names.
+   *
    * @return array
    *   id -> label mapping of only allowed roles for invites.
    */
   public function getAllowedRoleNames() {
     $userRoleNames = $this->getAllRoleNames();
     $allowedRoleIds = $this->getConfig()->get('roles') ?? [];
-    return array_filter($userRoleNames, 
-      function($userRoleId) use ($allowedRoleIds) {
-        return isset($allowedRoleIds[$userRoleId]); // Filter roles that are not allowed
+    return array_filter($userRoleNames,
+      function ($userRoleId) use ($allowedRoleIds) {
+        // Filter roles that are not allowed.
+        return isset($allowedRoleIds[$userRoleId]);
       }, ARRAY_FILTER_USE_KEY);
   }
 
   /**
+   * Gets the link to the administration form.
+   *
    * @return string
    *   The URL path to the configuration settings form for CU Boulder User Invite.
    */
@@ -180,8 +192,11 @@ class UserInviteHelperService {
   }
 
   /**
+   * Converts a supplied identikey to a full email address.
+   *
    * @param string $identikey
-   *   The CU Boulder IdentiKey
+   *   The CU Boulder IdentiKey.
+   *
    * @return string
    *   [IdentiKey]@colorado.edu
    */
@@ -190,8 +205,11 @@ class UserInviteHelperService {
   }
 
   /**
+   * Checks if a user-supplied email is valid.
+   *
    * @param string $email
    *   The email to validate.
+   *
    * @return bool
    *   TRUE if the email is valid, FALSE if not.
    */
@@ -200,19 +218,22 @@ class UserInviteHelperService {
   }
 
   /**
+   * Checks if a user-supplied identikey is valid.
+   *
    * @param string $identikey
    *   The CU Boulder IdentiKey to validate.
+   *
    * @return bool
    *   TRUE if the CU Boulder IdentiKey is valid, FALSE if not.
    */
-  public function isCUBoulderIdentiKeyValid($identikey) {
-    // TODO: Actual IdentiKey validation instead of validating as an email
+  public function isCuBoulderIdentiKeyValid($identikey) {
+    // @todo Actual IdentiKey validation instead of validating as an email
     return $this->isEmailValid($this->cuBoulderIdentiKeyToEmail($identikey));
   }
 
   /**
    * Emails CU Boulder users inviting them to log in to the site, and grants their accounts a role.
-   * 
+   *
    * @param string[] $invitedUsers
    *   An array of CU Boulder IdentiKeys.
    * @param string $roleId
@@ -224,7 +245,8 @@ class UserInviteHelperService {
    */
   public function invite(array $invitedUsers, $roleId, $customMessage, $mailConfirmation = TRUE) {
     $role = Role::load($roleId);
-    $data = [ // Data to pass to the email message template
+    // Data to pass to the email message template.
+    $data = [
       'config_name' => $this->getConfigName(),
       // 'invite_role' => $role,
       'invite_role_label' => $role->label(),
@@ -232,22 +254,25 @@ class UserInviteHelperService {
       'invite_custom_message' => $customMessage,
       'invite_user_list' => $invitedUsers,
       'invite_address_list' => array_map(
-        function($invitedUser) {
+        function ($invitedUser) {
           return $this->cuBoulderIdentiKeyToEmail($invitedUser);
-        }, $invitedUsers)];
+        }, $invitedUsers),
+    ];
     $senderEmail = $this->user->getEmail();
-    foreach($invitedUsers as $invitedUser) {
+    foreach ($invitedUsers as $invitedUser) {
       $invitedAddress = $this->cuBoulderIdentiKeyToEmail($invitedUser);
       // Mail the invite. Reply-To will be set to the email of the user sending the invite.
       $output = $this->mailManager->mail('ucb_user_invite', 'invite', $invitedAddress, $this->user->getPreferredAdminLangcode(), $data, $senderEmail);
-      if($output['result']) {
+      if ($output['result']) {
         $this->messenger->addStatus('Invite sent to ' . $invitedAddress . '!');
         $this->createAccount($invitedUser, $invitedAddress, $roleId);
-      } else {
+      }
+      else {
         $this->messenger->addError('Invite to ' . $invitedAddress . ' failed!');
       }
     }
-    if($mailConfirmation) { // Mail the confirmation back to the sender. Reply-To will be set to the administration email of the site.
+    // Mail the confirmation back to the sender. Reply-To will be set to the administration email of the site.
+    if ($mailConfirmation) {
       $administratorEmail = $this->configFactory->get('system.site')->get('mail');
       $this->mailManager->mail('ucb_user_invite', 'confirmation', $senderEmail, $this->user->getPreferredAdminLangcode(), $data, $administratorEmail);
     }
@@ -255,7 +280,7 @@ class UserInviteHelperService {
 
   /**
    * Creates an account with a role or grants a role if one already exists.
-   * 
+   *
    * @param string $invitedUser
    *   The unique username.
    * @param string $invitedAddress
@@ -265,20 +290,26 @@ class UserInviteHelperService {
    */
   protected function createAccount($invitedUser, $invitedAddress, $roleId) {
     $storage = $this->entityTypeManager->getStorage($this->entityTypeRepository->getEntityTypeFromClass(User::class));
-    $existingUserIds = $storage->getQuery()->accessCheck(FALSE)->condition('name', $invitedUser)->execute(); // Comes back as an array but there should be only one
-    if($existingUserIds) {
+    // Comes back as an array but there should be only one.
+    $existingUserIds = $storage->getQuery()->accessCheck(FALSE)->condition('name', $invitedUser)->execute();
+    if ($existingUserIds) {
       $existingUser = User::load(array_keys($existingUserIds)[0]);
-      if($roleId != Role::AUTHENTICATED_ID) // Trying to add `authenticated` role results in error, this avoids it
+      // Trying to add `authenticated` role results in error, this avoids it.
+      if ($roleId != Role::AUTHENTICATED_ID) {
         $existingUser->addRole($roleId);
+      }
       $existingUser->save();
-    } else {
+    }
+    else {
       User::create([
         'name' => $invitedUser,
         'mail' => $invitedAddress,
-        'pass' => 'password', // These accounts can't be authenticated locally so this makes no difference
+        // This password isn't used to login, SSO is used instead.
+        'pass' => 'password',
         'status' => 1,
         'roles' => $roleId,
       ])->enforceIsNew()->save();
     }
   }
+
 }

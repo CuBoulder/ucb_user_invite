@@ -8,42 +8,45 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\ucb_user_invite\UserInviteHelperService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * The form for inviting a user.
+ */
 class InviteForm extends FormBase {
 
   /**
-     * The user invite helper service defined in this module.
-     *
-     * @var \Drupal\ucb_user_invite\UserInviteHelperService
-     */
-    protected $helper;
+   * The user invite helper service defined in this module.
+   *
+   * @var \Drupal\ucb_user_invite\UserInviteHelperService
+   */
+  protected $helper;
 
-    /**
-     * Constructs an InviteForm object.
-     *
-     * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-     *   The config factory.
-     * @param \Drupal\ucb_user_invite\UserInviteHelperService $helper
-     *   The user invite helper service defined in this module.
-     */
-    public function __construct(ConfigFactoryInterface $config_factory, UserInviteHelperService $helper) {
-      $this->setConfigFactory($config_factory);
-      $this->helper = $helper;
-    }
+  /**
+   * Constructs an InviteForm object.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
+   * @param \Drupal\ucb_user_invite\UserInviteHelperService $helper
+   *   The user invite helper service defined in this module.
+   */
+  public function __construct(ConfigFactoryInterface $config_factory, UserInviteHelperService $helper) {
+    $this->setConfigFactory($config_factory);
+    $this->helper = $helper;
+  }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-     *   The container that allows getting any needed services.
-     *
-     * @link https://www.drupal.org/node/2133171 For more on dependency injection
-     */
-    public static function create(ContainerInterface $container) {
-      return new static(
-        $container->get('config.factory'),
-        $container->get('ucb_user_invite.helper')
-      );
-    }
+  /**
+   * {@inheritdoc}
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container that allows getting any needed services.
+   *
+   * @link https://www.drupal.org/node/2133171 For more on dependency injection
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('ucb_user_invite.helper')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -60,7 +63,7 @@ class InviteForm extends FormBase {
 
     // Define roles that users can have.
     $role_options = $this->helper->getAllowedRoleNames();
-    
+
     $form['role'] = [
       '#title' => $this->t('Role'),
       '#type' => 'radios',
@@ -94,7 +97,8 @@ class InviteForm extends FormBase {
       $form['email']['#disabled'] = TRUE;
       $form['custom_message']['#disabled'] = TRUE;
       $form['submit']['#disabled'] = TRUE;
-    } else {
+    }
+    else {
       $form['submit']['#button_type'] = 'primary';
     }
 
@@ -116,11 +120,12 @@ class InviteForm extends FormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     $invitedUsers = preg_split("/[,\s+]/", $form_state->getValue('identikeys'), -1, PREG_SPLIT_NO_EMPTY);
-    foreach($invitedUsers as $invitedUser) {
-      if (!$this->helper->isCUBoulderIdentiKeyValid($invitedUser)) {
-        $form_state->setErrorByName('identikeys', $this->t('Invalid CU Boulder IdentiKey: ' . $invitedUser .''));
+    foreach ($invitedUsers as $invitedUser) {
+      if (!$this->helper->isCuBoulderIdentiKeyValid($invitedUser)) {
+        $form_state->setErrorByName('identikeys', $this->t('Invalid CU Boulder IdentiKey: @value', ['@value' => $invitedUser]));
       }
     }
     $form_state->setValue('invited_users', $invitedUsers);
   }
+
 }
