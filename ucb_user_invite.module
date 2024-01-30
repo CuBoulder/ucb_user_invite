@@ -1,25 +1,32 @@
 <?php
 
 /**
+ * @file
+ * Contains functional hooks used by the CU Boulder User Invite module.
+ */
+
+use \Drupal\Core\Url;
+
+/**
  * This function contains templating code for email messages.
  * Implements hook_mail().
  */
 function ucb_user_invite_mail($key, &$message, $params){
-	$config = \Drupal::configFactory()->get($params['config_name']);
-	$template = $config->get($key . '_template');
-	if($template) {
-		$tokenService = \Drupal::token();
-		$tokens = [];
-		$options = ['langcode' => $message['langcode']];
-		$variables = [
-			'%role_label%' => $params['invite_role_label'],
-			'%role_id%' => $params['invite_role_id'],
-			'%custom_message%' => $params['invite_custom_message'],
-			'%user_list%' => join(', ', $params['invite_user_list'] ?? []),
-			'%address_list%' => join("\n", $params['invite_address_list'] ?? []),
-			'%login_link%' => \Drupal\Core\Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString()
-		];
-		$message['subject'] = $tokenService->replace(strtr($config->get($key . '_subject') ?? '', $variables), $tokens, $options);
-		$message['body'][] = $tokenService->replace(strtr($template, $variables), $tokens, $options);
-	}
+  $config = \Drupal::configFactory()->get($params['config_name']);
+  $template = $config->get($key . '_template');
+  if($template) {
+    $tokenService = \Drupal::token();
+    $tokens = [];
+    $options = ['langcode' => $message['langcode']];
+    $variables = [
+      '%role_label%' => $params['invite_role_label'],
+      '%role_id%' => $params['invite_role_id'],
+      '%custom_message%' => $params['invite_custom_message'],
+      '%user_list%' => join(', ', $params['invite_user_list'] ?? []),
+      '%address_list%' => join("\n", $params['invite_address_list'] ?? []),
+      '%login_link%' => Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString(),
+    ];
+    $message['subject'] = $tokenService->replace(strtr($config->get($key . '_subject') ?? '', $variables), $tokens, $options);
+    $message['body'][] = $tokenService->replace(strtr($template, $variables), $tokens, $options);
+  }
 }
