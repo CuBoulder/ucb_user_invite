@@ -5,16 +5,17 @@
  * Contains functional hooks used by the CU Boulder User Invite module.
  */
 
-use \Drupal\Core\Url;
+use Drupal\Core\Url;
 
 /**
  * This function contains templating code for email messages.
+ *
  * Implements hook_mail().
  */
-function ucb_user_invite_mail($key, &$message, $params){
+function ucb_user_invite_mail($key, &$message, $params) {
   $config = \Drupal::configFactory()->get($params['config_name']);
   $template = $config->get($key . '_template');
-  if($template) {
+  if ($template) {
     $tokenService = \Drupal::token();
     $tokens = [];
     $options = ['langcode' => $message['langcode']];
