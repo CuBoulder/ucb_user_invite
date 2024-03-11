@@ -68,24 +68,39 @@ class SettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config($this->helper->getConfigName());
 
-    // Define roles that users can have.
-    $role_options = $this->helper->getAllRoleNames();
+    $roles = $this->helper->getAllRoleNames();
+    $roleSettings = $config->get('roles') ?? [];
 
+    $form_state->setStorage(['rids' => array_keys($roles)]);
     $form['roles'] = [
-      '#type' => 'checkboxes',
+      '#type' => 'fieldset',
       '#title' => $this->t('Roles users can be invited to join'),
-      '#description' => $this->t('Users with permission to send invites will be able to invite users to join a site with any of these roles. GRANT WITH CAUTION!'),
-      '#options' => $role_options,
-      '#default_value' => $config->get('roles') ?? [],
-      '#multiple' => TRUE,
-      '#required' => TRUE,
     ];
+    foreach ($roles as $rid => $roleName) {
+      $form['roles'][$rid . '_enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $roleName,
+        '#default_value' => isset($roleSettings[$rid]['status']) && $roleSettings[$rid]['status'],
+      ];
+      $form['roles'][$rid . '_description'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Role description'),
+        '#description' => $this->t('Optionally set a description for this role to appear when sending an invite.'),
+        '#default_value' => $roleSettings[$rid]['description'] ?? $roleSettings[$rid]['description'],
+        '#maxlength' => 1024,
+        '#states' => [
+          'visible' => [
+            ':input[name="' . $rid . '_enabled"]' => ['checked' => TRUE],
+          ],
+        ],
+      ];
+    }
 
     $form['default_role'] = [
       '#title' => $this->t('Default role'),
       '#description' => $this->t('Choose the default role you wish to have selected on the invite page.'),
       '#type' => 'radios',
-      '#options' => $role_options,
+      '#options' => $roles,
       '#default_value' => $config->get('default_role') ?? '',
       '#required' => TRUE,
     ];
@@ -138,6 +153,33 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    $rids = $form_state->getStorage()['rids'];
+    $roles = [];
+    $defaultRole = $form_state->getValue('default_role');
+    $defaultRoleValid = FALSE;
+    foreach ($rids as $rid) {
+      $roles[$rid] = [
+        'status' => (bool) $form_state->getValue($rid . '_enabled'),
+        'description' => $form_state->getValue($rid . '_description'),
+      ];
+      if ($rid == $defaultRole && $roles[$rid]['status']) {
+        $defaultRoleValid = TRUE;
+      }
+    }
+    $form_state->setValue('roles', $roles);
+
+    if (!$defaultRoleValid) {
+      $form_state->setErrorByName('default_role', $this->t('Default role can only be one of the roles selected to invite.'));
+      return;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config($this->helper->getConfigName())
       ->set('roles', $form_state->getValue('roles'))
@@ -149,16 +191,6 @@ class SettingsForm extends ConfigFormBase {
       ->set('confirmation_template', $form_state->getValue('confirmation_template'))
       ->save();
     parent::submitForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-    if (!in_array($form_state->getValue('default_role'), $form_state->getValue('roles'))) {
-      $form_state->setErrorByName('default_role', $this->t('Default role can only be one of the roles selected to invite.'));
-    }
   }
 
 }

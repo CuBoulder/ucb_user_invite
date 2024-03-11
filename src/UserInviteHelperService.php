@@ -128,20 +128,20 @@ class UserInviteHelperService {
   }
 
   /**
-   * Gets the machine name of the CU Boulder User Invite configuration.
+   * Gets the machine name of the CU Boulder User Invite settings.
    *
    * @return string
-   *   The machine name of the CU Boulder User Invite configuration.
+   *   The machine name of the CU Boulder User Invite settings.
    */
   public function getConfigName() {
-    return 'ucb_user_invite.configuration';
+    return 'ucb_user_invite.settings';
   }
 
   /**
-   * Gets the CU Boulder User Invite configuration.
+   * Gets the CU Boulder User Invite settings.
    *
    * @return \Drupal\Core\Config\Config
-   *   The read-only CU Boulder User Invite configuration, to be used locally.
+   *   The read-only CU Boulder User Invite settings, to be used locally.
    */
   protected function getConfig() {
     return $this->configFactory->get($this->getConfigName());
@@ -173,11 +173,11 @@ class UserInviteHelperService {
    */
   public function getAllowedRoleNames() {
     $userRoleNames = $this->getAllRoleNames();
-    $allowedRoleIds = $this->getConfig()->get('roles') ?? [];
+    $roles = $this->getConfig()->get('roles') ?? [];
     return array_filter($userRoleNames,
-      function ($userRoleId) use ($allowedRoleIds) {
+      function ($rid) use ($roles) {
         // Filter roles that are not allowed.
-        return isset($allowedRoleIds[$userRoleId]);
+        return isset($roles[$rid]['status']) && $roles[$rid]['status'];
       }, ARRAY_FILTER_USE_KEY);
   }
 
@@ -185,7 +185,7 @@ class UserInviteHelperService {
    * Gets the link to the administration form.
    *
    * @return string
-   *   The URL path to the configuration settings form for CU Boulder User Invite.
+   *   The URL path to the settings form for CU Boulder User Invite.
    */
   public function getAdminFormLink() {
     return $this->urlGenerator->generateFromRoute('ucb_user_invite.settings_form');
