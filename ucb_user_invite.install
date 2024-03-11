@@ -12,19 +12,20 @@
  */
 function ucb_user_invite_update_9501() {
   $oldSettings = \Drupal::configFactory()->getEditable('ucb_user_invite.configuration');
+  $defaultRole = $oldSettings->get('default_role');
   $newSettings = \Drupal::configFactory()->getEditable('ucb_user_invite.settings');
   $roles = $oldSettings->get('roles');
   $roleSettings = [];
-  foreach ($roles as $role => $value) {
+  foreach ($roles as $rid => $value) {
     if ($value) {
-      $roleSettings[$role] = [
+      $roleSettings[$rid] = [
         'status' => TRUE,
+        'default' => $defaultRole == $rid,
         'description' => '',
       ];
     }
   }
   $newSettings->set('roles', $roleSettings)
-    ->set('default_role', $oldSettings->get('default_role'))
     ->set('default_custom_message', $oldSettings->get('default_custom_message'))
     ->set('invite_subject', $oldSettings->get('invite_subject'))
     ->set('invite_template', $oldSettings->get('invite_template'))

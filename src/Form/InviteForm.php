@@ -62,15 +62,21 @@ class InviteForm extends FormBase {
     $config = $this->config($this->helper->getConfigName());
 
     // Define roles that users can have.
-    $role_options = $this->helper->getAllowedRoleNames();
+    $roles = $this->helper->getAllowedRoles();
 
-    $form['role'] = [
-      '#title' => $this->t('Role'),
-      '#type' => 'radios',
-      '#options' => $role_options,
-      '#default_value' => $config->get('default_role') ?? '',
-      '#required' => TRUE,
+    $form_state->setStorage(['rids' => array_keys($roles)]);
+    $form['roles'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Roles'),
     ];
+    foreach ($roles as $rid => $role) {
+      $form['roles']['role_' . $rid . '_enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $role['label'],
+        '#description' => $role['description'],
+        '#default_value' => $role['default'],
+      ];
+    }
     $form['identikeys'] = [
       '#title' => $this->t('CU Boulder User IdentiKeys'),
       '#type' => 'textfield',
@@ -90,7 +96,7 @@ class InviteForm extends FormBase {
       '#value' => $this->t('Send invite'),
     ];
 
-    if (empty($role_options)) {
+    if (empty($roles)) {
       $this->messenger()->addError($this->t('Your site is not yet configured to invite users. Contact the site administrator to <a href="@adminlink">configure the invite feature</a>.', ['@adminlink' => $this->helper->getAdminFormLink()]));
       $form['rid']['#options'] = ['' => '(no roles avaliable)'];
       $form['rid']['#disabled'] = TRUE;
@@ -108,17 +114,18 @@ class InviteForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $invitedUsers = $form_state->getValue('invited_users');
-    $roleId = $form_state->getValue('role');
-    $customMessage = $form_state->getValue('custom_message');
-    $this->helper->invite($invitedUsers, $roleId, $customMessage);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+
+    $rids = array_filter($form_state->getStorage()['rids'], function ($rid) use ($form_state) {
+      return $form_state->getValue('role_' . $rid . '_enabled');
+    });
+    if (empty($rids)) {
+      $form_state->setErrorByName('roles', $this->t('At least one role must be selected.'));
+      return;
+    }
+    $form_state->setValue('roles', $rids);
+
     $invitedUsers = preg_split("/[,\s+]/", $form_state->getValue('identikeys'), -1, PREG_SPLIT_NO_EMPTY);
     foreach ($invitedUsers as $invitedUser) {
       if (!$this->helper->isCuBoulderIdentiKeyValid($invitedUser)) {
@@ -126,6 +133,16 @@ class InviteForm extends FormBase {
       }
     }
     $form_state->setValue('invited_users', $invitedUsers);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $invitedUsers = $form_state->getValue('invited_users');
+    $rids = $form_state->getValue('roles');
+    $customMessage = $form_state->getValue('custom_message');
+    $this->helper->invite($invitedUsers, $rids, $customMessage);
   }
 
 }

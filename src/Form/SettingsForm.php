@@ -68,21 +68,31 @@ class SettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config($this->helper->getConfigName());
 
-    $roles = $this->helper->getAllRoleNames();
+    $roleLabels = $this->helper->getAllRoleLabels();
     $roleSettings = $config->get('roles') ?? [];
 
-    $form_state->setStorage(['rids' => array_keys($roles)]);
-    $form['roles'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Roles users can be invited to join'),
-    ];
-    foreach ($roles as $rid => $roleName) {
-      $form['roles'][$rid . '_enabled'] = [
+    $form_state->setStorage(['rids' => array_keys($roleLabels)]);
+    foreach ($roleLabels as $rid => $roleLabel) {
+      $form['role_' . $rid] = [
+        '#type' => 'fieldset',
+        '#title' => $roleLabel,
+      ];
+      $form['role_' . $rid]['role_' . $rid . '_enabled'] = [
         '#type' => 'checkbox',
-        '#title' => $roleName,
+        '#title' => $this->t('Allow users to be invited to join this role'),
         '#default_value' => isset($roleSettings[$rid]['status']) && $roleSettings[$rid]['status'],
       ];
-      $form['roles'][$rid . '_description'] = [
+      $form['role_' . $rid]['role_' . $rid . '_default'] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Select this role by default when sending an invite'),
+        '#default_value' => isset($roleSettings[$rid]['default']) && $roleSettings[$rid]['default'],
+        '#states' => [
+          'visible' => [
+            ':input[name="role_' . $rid . '_enabled"]' => ['checked' => TRUE],
+          ],
+        ],
+      ];
+      $form['role_' . $rid]['role_' . $rid . '_description'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Role description'),
         '#description' => $this->t('Optionally set a description for this role to appear when sending an invite.'),
@@ -90,20 +100,11 @@ class SettingsForm extends ConfigFormBase {
         '#maxlength' => 1024,
         '#states' => [
           'visible' => [
-            ':input[name="' . $rid . '_enabled"]' => ['checked' => TRUE],
+            ':input[name="role_' . $rid . '_enabled"]' => ['checked' => TRUE],
           ],
         ],
       ];
     }
-
-    $form['default_role'] = [
-      '#title' => $this->t('Default role'),
-      '#description' => $this->t('Choose the default role you wish to have selected on the invite page.'),
-      '#type' => 'radios',
-      '#options' => $roles,
-      '#default_value' => $config->get('default_role') ?? '',
-      '#required' => TRUE,
-    ];
 
     $form['default_custom_message'] = [
       '#title' => $this->t('Default custom message'),
@@ -158,23 +159,18 @@ class SettingsForm extends ConfigFormBase {
 
     $rids = $form_state->getStorage()['rids'];
     $roles = [];
-    $defaultRole = $form_state->getValue('default_role');
-    $defaultRoleValid = FALSE;
+    $defaultRoles = [];
     foreach ($rids as $rid) {
       $roles[$rid] = [
-        'status' => (bool) $form_state->getValue($rid . '_enabled'),
-        'description' => $form_state->getValue($rid . '_description'),
+        'status' => (bool) $form_state->getValue('role_' . $rid . '_enabled'),
+        'default' => $form_state->getValue('role_' . $rid . '_default'),
+        'description' => $form_state->getValue('role_' . $rid . '_description'),
       ];
-      if ($rid == $defaultRole && $roles[$rid]['status']) {
-        $defaultRoleValid = TRUE;
+      if ($form_state->getValue('role_' . $rid . '_default')) {
+        $defaultRoles[] = $rid;
       }
     }
     $form_state->setValue('roles', $roles);
-
-    if (!$defaultRoleValid) {
-      $form_state->setErrorByName('default_role', $this->t('Default role can only be one of the roles selected to invite.'));
-      return;
-    }
   }
 
   /**
@@ -183,7 +179,6 @@ class SettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config($this->helper->getConfigName())
       ->set('roles', $form_state->getValue('roles'))
-      ->set('default_role', $form_state->getValue('default_role'))
       ->set('default_custom_message', $form_state->getValue('default_custom_message'))
       ->set('invite_subject', $form_state->getValue('invite_subject'))
       ->set('invite_template', $form_state->getValue('invite_template'))
