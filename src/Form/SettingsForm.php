@@ -80,11 +80,13 @@ class SettingsForm extends ConfigFormBase {
       $form['role_' . $rid]['role_' . $rid . '_enabled'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Allow users to be invited to join this role'),
+        '#description' => $this->t('Anyone with permission to send user invites will be able to assign this role. Grant with caution!'),
         '#default_value' => isset($roleSettings[$rid]['status']) && $roleSettings[$rid]['status'],
       ];
       $form['role_' . $rid]['role_' . $rid . '_default'] = [
         '#type' => 'checkbox',
-        '#title' => $this->t('Select this role by default when sending an invite'),
+        '#title' => $this->t('Select this role by default'),
+        '#description' => $this->t('This role will be selected by default when sending an invite. Recommended for the most common roles on the site.'),
         '#default_value' => isset($roleSettings[$rid]['default']) && $roleSettings[$rid]['default'],
         '#states' => [
           'visible' => [
@@ -163,7 +165,7 @@ class SettingsForm extends ConfigFormBase {
     foreach ($rids as $rid) {
       $roles[$rid] = [
         'status' => (bool) $form_state->getValue('role_' . $rid . '_enabled'),
-        'default' => $form_state->getValue('role_' . $rid . '_default'),
+        'default' => (bool) $form_state->getValue('role_' . $rid . '_default'),
         'description' => $form_state->getValue('role_' . $rid . '_description'),
       ];
       if ($form_state->getValue('role_' . $rid . '_default')) {
