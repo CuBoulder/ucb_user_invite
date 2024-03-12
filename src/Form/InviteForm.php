@@ -98,8 +98,6 @@ class InviteForm extends FormBase {
 
     if (empty($roles)) {
       $this->messenger()->addError($this->t('Your site is not yet configured to invite users. Contact the site administrator to <a href="@adminlink">configure the invite feature</a>.', ['@adminlink' => $this->helper->getAdminFormLink()]));
-      $form['rid']['#options'] = ['' => '(no roles avaliable)'];
-      $form['rid']['#disabled'] = TRUE;
       $form['email']['#disabled'] = TRUE;
       $form['custom_message']['#disabled'] = TRUE;
       $form['submit']['#disabled'] = TRUE;
@@ -115,8 +113,6 @@ class InviteForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-
     $rids = array_filter($form_state->getStorage()['rids'], function ($rid) use ($form_state) {
       return $form_state->getValue('role_' . $rid . '_enabled');
     });
@@ -129,7 +125,7 @@ class InviteForm extends FormBase {
     $invitedUsers = preg_split("/[,\s+]/", $form_state->getValue('identikeys'), -1, PREG_SPLIT_NO_EMPTY);
     foreach ($invitedUsers as $invitedUser) {
       if (!$this->helper->isCuBoulderIdentiKeyValid($invitedUser)) {
-        $form_state->setErrorByName('identikeys', $this->t('Invalid CU Boulder IdentiKey: @value', ['@value' => $invitedUser]));
+        $form_state->setErrorByName('identikeys', $this->t('Invalid IdentiKey: @value', ['@value' => $invitedUser]));
       }
     }
     $form_state->setValue('invited_users', $invitedUsers);
