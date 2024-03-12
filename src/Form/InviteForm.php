@@ -78,9 +78,9 @@ class InviteForm extends FormBase {
       ];
     }
     $form['identikeys'] = [
-      '#title' => $this->t('CU Boulder User IdentiKeys'),
+      '#title' => $this->t('User IdentiKeys'),
       '#type' => 'textfield',
-      '#description' => $this->t('Comma-separated list of users that are invited and granted the above role.'),
+      '#description' => $this->t('Comma-separated list of <a target="_blank" href="@identikey_about_link">IdentiKeys</a> for users to be invited and given the selected roles. The users will be able to securely log in using their CU Boulder-provided credentials. Don\'t include "@colorado.edu" after the IdentiKeys.', ['@identikey_about_link' => 'https://oit.colorado.edu/services/identity-access-management/identikey']),
       '#required' => TRUE,
     ];
     $form['custom_message'] = [
