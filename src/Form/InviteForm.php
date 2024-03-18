@@ -88,7 +88,7 @@ class InviteForm extends FormBase {
       '#type' => 'textarea',
       '#cols' => 40,
       '#rows' => 5,
-      '#description' => $this->t('Optionally add a custom message before the standard template. Tokens are supported.'),
+      '#description' => $this->t('Optionally add a custom message before the standard template. Can be left blank. Tokens are supported.'),
       '#default_value' => $config->get('default_custom_message'),
     ];
     $form['submit'] = [
