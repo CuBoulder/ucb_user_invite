@@ -61,10 +61,10 @@ class InviteForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config($this->helper->getConfigName());
 
+    // Define roles that users can have.
     $roles = $this->helper->getAllowedRoles();
-    $defaultCustomMessage = $config->get('default_custom_message');
-    $form_state->setStorage(['rids' => array_keys($roles), 'default_custom_message' => $defaultCustomMessage]);
 
+    $form_state->setStorage(['rids' => array_keys($roles)]);
     $form['roles'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Roles'),
@@ -89,7 +89,7 @@ class InviteForm extends FormBase {
       '#cols' => 40,
       '#rows' => 5,
       '#description' => $this->t('The custom message will be included before the standard template. Tokens are supported.'),
-      '#placeholder' => $defaultCustomMessage,
+      '#default_value' => $config->get('default_custom_message'),
     ];
     $form['submit'] = [
       '#type' => 'submit',
@@ -113,8 +113,7 @@ class InviteForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    $storage = $form_state->getStorage();
-    $rids = array_filter($storage['rids'], function ($rid) use ($form_state) {
+    $rids = array_filter($form_state->getStorage()['rids'], function ($rid) use ($form_state) {
       return $form_state->getValue('role_' . $rid . '_enabled');
     });
     if (empty($rids)) {
@@ -130,8 +129,6 @@ class InviteForm extends FormBase {
       }
     }
     $form_state->setValue('invited_users', $invitedUsers);
-    $customMessage = $form_state->getValue('custom_message');
-    $form_state->setValue('custom_message', $customMessage ? $customMessage : $storage['default_custom_message']);
   }
 
   /**
