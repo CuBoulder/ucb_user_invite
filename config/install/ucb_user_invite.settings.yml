@@ -1,5 +1,4 @@
-roles: []
-default_role: ''
+roles: {  }
 
 default_custom_message: 'Hello,'
 
@@ -11,7 +10,7 @@ invite_template: |
 
   To accept this invitation:
   1) Go to %login_link%
-  2) Log in with your CU Boulder credentials.
+  2) Log in with your credentials.
 
   This invitation was sent by a manager of the site with permission to invite users. If you have any questions, please reach out to them directly at [current-user:mail].
 

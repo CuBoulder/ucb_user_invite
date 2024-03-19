@@ -62,19 +62,25 @@ class InviteForm extends FormBase {
     $config = $this->config($this->helper->getConfigName());
 
     // Define roles that users can have.
-    $role_options = $this->helper->getAllowedRoleNames();
+    $roles = $this->helper->getAllowedRoles();
 
-    $form['role'] = [
-      '#title' => $this->t('Role'),
-      '#type' => 'radios',
-      '#options' => $role_options,
-      '#default_value' => $config->get('default_role') ?? '',
-      '#required' => TRUE,
+    $form_state->setStorage(['rids' => array_keys($roles)]);
+    $form['roles'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Roles'),
     ];
+    foreach ($roles as $rid => $role) {
+      $form['roles']['role_' . $rid . '_enabled'] = [
+        '#type' => 'checkbox',
+        '#title' => $role['label'],
+        '#description' => $role['description'],
+        '#default_value' => $role['default'],
+      ];
+    }
     $form['identikeys'] = [
-      '#title' => $this->t('CU Boulder User IdentiKeys'),
+      '#title' => $this->t('User IdentiKeys'),
       '#type' => 'textfield',
-      '#description' => $this->t('Comma-separated list of users that are invited and granted the above role.'),
+      '#description' => $this->t('Comma-separated list of <a target="_blank" href="@identikey_about_link">IdentiKeys</a> for users to be invited and given the selected roles. The users will be able to securely log in using their CU Boulder-provided credentials. Don\'t include "@colorado.edu" after the IdentiKeys.', ['@identikey_about_link' => 'https://oit.colorado.edu/services/identity-access-management/identikey']),
       '#required' => TRUE,
     ];
     $form['custom_message'] = [
@@ -82,7 +88,7 @@ class InviteForm extends FormBase {
       '#type' => 'textarea',
       '#cols' => 40,
       '#rows' => 5,
-      '#description' => $this->t('The custom message will be included before the standard template. Tokens are supported.'),
+      '#description' => $this->t('Optionally add a custom message before the standard template. Can be left blank. Tokens are supported.'),
       '#default_value' => $config->get('default_custom_message'),
     ];
     $form['submit'] = [
@@ -90,10 +96,8 @@ class InviteForm extends FormBase {
       '#value' => $this->t('Send invite'),
     ];
 
-    if (empty($role_options)) {
+    if (empty($roles)) {
       $this->messenger()->addError($this->t('Your site is not yet configured to invite users. Contact the site administrator to <a href="@adminlink">configure the invite feature</a>.', ['@adminlink' => $this->helper->getAdminFormLink()]));
-      $form['rid']['#options'] = ['' => '(no roles avaliable)'];
-      $form['rid']['#disabled'] = TRUE;
       $form['email']['#disabled'] = TRUE;
       $form['custom_message']['#disabled'] = TRUE;
       $form['submit']['#disabled'] = TRUE;
@@ -108,24 +112,33 @@ class InviteForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $invitedUsers = $form_state->getValue('invited_users');
-    $roleId = $form_state->getValue('role');
-    $customMessage = $form_state->getValue('custom_message');
-    $this->helper->invite($invitedUsers, $roleId, $customMessage);
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $rids = array_filter($form_state->getStorage()['rids'], function ($rid) use ($form_state) {
+      return $form_state->getValue('role_' . $rid . '_enabled');
+    });
+    if (empty($rids)) {
+      $form_state->setErrorByName('roles', $this->t('At least one role must be selected.'));
+      return;
+    }
+    $form_state->setValue('roles', $rids);
+
+    $invitedUsers = preg_split("/[,\s+]/", $form_state->getValue('identikeys'), -1, PREG_SPLIT_NO_EMPTY);
+    foreach ($invitedUsers as $invitedUser) {
+      if (!$this->helper->isCuBoulderIdentiKeyValid($invitedUser)) {
+        $form_state->setErrorByName('identikeys', $this->t('Invalid IdentiKey: @value', ['@value' => $invitedUser]));
+      }
+    }
+    $form_state->setValue('invited_users', $invitedUsers);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    $invitedUsers = preg_split("/[,\s+]/", $form_state->getValue('identikeys'), -1, PREG_SPLIT_NO_EMPTY);
-    foreach ($invitedUsers as $invitedUser) {
-      if (!$this->helper->isCuBoulderIdentiKeyValid($invitedUser)) {
-        $form_state->setErrorByName('identikeys', $this->t('Invalid CU Boulder IdentiKey: @value', ['@value' => $invitedUser]));
-      }
-    }
-    $form_state->setValue('invited_users', $invitedUsers);
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $invitedUsers = $form_state->getValue('invited_users');
+    $rids = $form_state->getValue('roles');
+    $customMessage = $form_state->getValue('custom_message');
+    $this->helper->invite($invitedUsers, $rids, $customMessage);
   }
 
 }

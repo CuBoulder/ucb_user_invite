@@ -23,8 +23,8 @@ function ucb_user_invite_mail($key, &$message, $params) {
       '%role_label%' => $params['invite_role_label'],
       '%role_id%' => $params['invite_role_id'],
       '%custom_message%' => $params['invite_custom_message'],
-      '%user_list%' => join(', ', $params['invite_user_list'] ?? []),
-      '%address_list%' => join("\n", $params['invite_address_list'] ?? []),
+      '%user_list%' => implode(', ', $params['invite_user_list'] ?? []),
+      '%address_list%' => implode("\n", $params['invite_address_list'] ?? []),
       '%login_link%' => Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString(),
     ];
     $message['subject'] = $tokenService->replace(strtr($config->get($key . '_subject') ?? '', $variables), $tokens, $options);
