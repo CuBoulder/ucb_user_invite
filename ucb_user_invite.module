@@ -28,6 +28,6 @@ function ucb_user_invite_mail($key, &$message, $params) {
       '%login_link%' => Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString(),
     ];
     $message['subject'] = $tokenService->replace(strtr($config->get($key . '_subject') ?? '', $variables), $tokens, $options);
-    $message['body'][] = $tokenService->replace(strtr($template, $variables), $tokens, $options);
+    $message['body'] = ['#markup' => $tokenService->replace(strtr($template, $variables), $tokens, $options)];
   }
 }
