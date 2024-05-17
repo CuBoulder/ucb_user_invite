@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### Adds markup support to email messages
+  [Change] This update adds email message markup support to the user invite module.
+  
+  Resolves CuBoulder/ucb_user_invite#8
+  
+  Sister PR in: [tiamat10-profile](https://github.com/CuBoulder/tiamat10-profile/pull/134)
+---
+
 - ### CU Boulder User Invite v1.1
   This update:
   - [New] Enables selection of multiple user roles for an invite. Previously only one role could be selected.
