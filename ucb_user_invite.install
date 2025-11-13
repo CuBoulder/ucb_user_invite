@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains update hooks used by the CU Boulder User Invite module.
+ * Contains install and update hooks used by the CU Boulder User Invite module.
  */
+
 
 /**
  * Updates settings namespace.
