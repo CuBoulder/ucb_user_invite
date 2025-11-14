@@ -2,8 +2,9 @@
 
 /**
  * @file
- * Contains update hooks used by the CU Boulder User Invite module.
+ * Contains install and update hooks used by the CU Boulder User Invite module.
  */
+
 
 /**
  * Updates settings namespace.
@@ -35,4 +36,55 @@ function ucb_user_invite_update_9501() {
       ->save();
   }
   $oldSettings->delete();
+}
+
+/**
+ * Adds the 'field_identikey' field to the User entity.
+ *
+ * Introduced in version 1.3 to support SAML authentication sync.
+ */
+function ucb_user_invite_update_9502() {
+  $field_name = 'field_identikey';
+  $entity_type = 'user';
+  $bundle = 'user';
+
+  // Check if field storage already exists.
+  $field_storage = \Drupal::entityTypeManager()
+    ->getStorage('field_storage_config')
+    ->load($entity_type . '.' . $field_name);
+
+  if (!$field_storage) {
+    // Create field storage.
+    $field_storage = \Drupal::entityTypeManager()
+      ->getStorage('field_storage_config')
+      ->create([
+        'field_name' => $field_name,
+        'entity_type' => $entity_type,
+        'type' => 'string',
+        'settings' => [
+          'max_length' => 255,
+        ],
+      ]);
+    $field_storage->save();
+  }
+
+  // Check if field instance already exists.
+  $field_config = \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->load($entity_type . '.' . $bundle . '.' . $field_name);
+
+  if (!$field_config) {
+    // Create field instance.
+    $field_config = \Drupal::entityTypeManager()
+      ->getStorage('field_config')
+      ->create([
+        'field_name' => $field_name,
+        'entity_type' => $entity_type,
+        'bundle' => $bundle,
+        'label' => t('IdentiKey'),
+        'description' => t('CU Boulder IdentiKey used for SAML authentication sync.'),
+        'required' => FALSE,
+      ]);
+    $field_config->save();
+  }
 }

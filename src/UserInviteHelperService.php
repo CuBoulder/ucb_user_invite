@@ -319,17 +319,27 @@ class UserInviteHelperService {
           $existingUser->addRole($rid);
         }
       }
+      // Update identikey field if it exists and is empty.
+      if ($existingUser->hasField('field_identikey') && $existingUser->get('field_identikey')->isEmpty()) {
+        $existingUser->set('field_identikey', $invitedUser);
+      }
       $existingUser->save();
     }
     else {
-      User::create([
+      $user_data = [
         'name' => $invitedUser,
         'mail' => $invitedAddress,
         // This password isn't used to login, SSO is used instead.
         'pass' => 'password',
         'status' => 1,
         'roles' => $rids,
-      ])->enforceIsNew()->save();
+      ];
+      // Add identikey field if it exists.
+      $new_user = User::create($user_data);
+      if ($new_user->hasField('field_identikey')) {
+        $new_user->set('field_identikey', $invitedUser);
+      }
+      $new_user->enforceIsNew()->save();
     }
   }
 

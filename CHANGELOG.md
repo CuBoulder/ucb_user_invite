@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### Adding IdentiKey field to the User entity
+  Add `field_identikey` field to user configuration
+  Set that field based on `identikey` information provided in user invite
+  
+  Update hook for adding `field_identikey` if the site is already live with the user invite module
+  
+  Resolves #14 
+---
+
 - ### D11 version bump
   D11 version bump
 ---

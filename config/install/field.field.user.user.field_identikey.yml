@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_identikey
+  module:
+    - user
+id: user.user.field_identikey
+field_name: field_identikey
+entity_type: user
+bundle: user
+label: IdentiKey
+description: 'CU Boulder IdentiKey used for SAML authentication sync.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string
+
