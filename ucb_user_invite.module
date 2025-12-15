@@ -31,3 +31,53 @@ function ucb_user_invite_mail($key, &$message, $params) {
     $message['body'] = ['#markup' => $tokenService->replace(strtr($template, $variables), $tokens, $options)];
   }
 }
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function ucb_user_invite_preprocess_page(&$variables) {
+  // Check if TOS acceptance is enabled in site configuration.
+  $site_config = \Drupal::config('ucb_site_configuration.settings');
+  $tos_enabled = $site_config->get('tos_acceptance_enabled');
+  
+  // If TOS acceptance is not enabled (default is FALSE), don't show the modal.
+  if (empty($tos_enabled)) {
+    return;
+  }
+  
+  // Only check for logged-in users on user pages.
+  $route_match = \Drupal::routeMatch();
+  $route_name = $route_match->getRouteName();
+  
+  // Check if this is a user page route.
+  if (in_array($route_name, ['entity.user.canonical', 'user.page'])) {
+    $current_user = \Drupal::currentUser();
+    
+    // Only show modal to authenticated users.
+    if ($current_user->isAuthenticated()) {
+      $user = \Drupal::entityTypeManager()
+        ->getStorage('user')
+        ->load($current_user->id());
+      
+      // Check if user has accepted TOS.
+      if ($user && $user->hasField('field_tos_acceptance')) {
+        $tos_accepted = $user->get('field_tos_acceptance')->value;
+        
+        // If TOS not accepted, attach the library to show modal.
+        if (empty($tos_accepted)) {
+          $variables['#attached']['library'][] = 'boulder_base/ucb-tos-acceptance';
+          
+          // TOS URL from Web Central Website.
+          $tos_url = 'https://www.colorado.edu/webcentral';
+          
+          // Pass settings to JavaScript.
+          $variables['#attached']['drupalSettings']['ucb_tos_acceptance'] = [
+            'show_modal' => TRUE,
+            'tos_url' => $tos_url,
+            'accept_url' => Url::fromRoute('ucb_user_invite.tos_acceptance')->toString(),
+          ];
+        }
+      }
+    }
+  }
+}

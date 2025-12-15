@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_tos_acceptance
+  module:
+    - user
+id: user.user.field_tos_acceptance
+field_name: field_tos_acceptance
+entity_type: user
+bundle: user
+label: 'Terms of Service Accepted'
+description: 'Indicates whether the user has accepted the Terms of Service.'
+required: false
+translatable: true
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings: {  }
+field_type: boolean
