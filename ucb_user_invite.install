@@ -88,3 +88,115 @@ function ucb_user_invite_update_9502() {
     $field_config->save();
   }
 }
+
+/**
+ * Adds the 'field_tos_acceptance' and 'field_accepted_date' fields to the User entity.
+ *
+ * Introduced to support Terms of Service acceptance tracking.
+ */
+function ucb_user_invite_update_9503() {
+  $entity_type = 'user';
+  $bundle = 'user';
+
+  // Create field_tos_acceptance (boolean).
+  $tos_field_name = 'field_tos_acceptance';
+  $tos_field_storage = \Drupal::entityTypeManager()
+    ->getStorage('field_storage_config')
+    ->load($entity_type . '.' . $tos_field_name);
+
+  if (!$tos_field_storage) {
+    $tos_field_storage = \Drupal::entityTypeManager()
+      ->getStorage('field_storage_config')
+      ->create([
+        'field_name' => $tos_field_name,
+        'entity_type' => $entity_type,
+        'type' => 'boolean',
+        'settings' => [
+          'on_label' => 'Accepted',
+          'off_label' => 'Not Accepted',
+        ],
+      ]);
+    $tos_field_storage->save();
+  }
+
+  $tos_field_config = \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->load($entity_type . '.' . $bundle . '.' . $tos_field_name);
+
+  if (!$tos_field_config) {
+    $tos_field_config = \Drupal::entityTypeManager()
+      ->getStorage('field_config')
+      ->create([
+        'field_name' => $tos_field_name,
+        'entity_type' => $entity_type,
+        'bundle' => $bundle,
+        'label' => t('Terms of Service Accepted'),
+        'description' => t('Indicates whether the user has accepted the Terms of Service.'),
+        'required' => FALSE,
+        'default_value' => [
+          [
+            'value' => 0,
+          ],
+        ],
+      ]);
+    $tos_field_config->save();
+  }
+
+  // Create field_accepted_date (datetime).
+  $date_field_name = 'field_accepted_date';
+  $date_field_storage = \Drupal::entityTypeManager()
+    ->getStorage('field_storage_config')
+    ->load($entity_type . '.' . $date_field_name);
+
+  if (!$date_field_storage) {
+    $date_field_storage = \Drupal::entityTypeManager()
+      ->getStorage('field_storage_config')
+      ->create([
+        'field_name' => $date_field_name,
+        'entity_type' => $entity_type,
+        'type' => 'datetime',
+        'settings' => [
+          'datetime_type' => 'datetime',
+        ],
+      ]);
+    $date_field_storage->save();
+  }
+
+  $date_field_config = \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->load($entity_type . '.' . $bundle . '.' . $date_field_name);
+
+  if (!$date_field_config) {
+    $date_field_config = \Drupal::entityTypeManager()
+      ->getStorage('field_config')
+      ->create([
+        'field_name' => $date_field_name,
+        'entity_type' => $entity_type,
+        'bundle' => $bundle,
+        'label' => t('TOS Accepted Date'),
+        'description' => t('The date and time when the user accepted the Terms of Service.'),
+        'required' => FALSE,
+      ]);
+    $date_field_config->save();
+  }
+
+  // Set default value for all existing users to FALSE (0) for tos_acceptance.
+  $user_storage = \Drupal::entityTypeManager()->getStorage('user');
+  $query = $user_storage->getQuery()
+    ->accessCheck(FALSE)
+    ->condition('uid', 0, '>');
+  $uids = $query->execute();
+
+  if (!empty($uids)) {
+    $users = $user_storage->loadMultiple($uids);
+    foreach ($users as $user) {
+      if ($user->hasField('field_tos_acceptance')) {
+        $current_value = $user->get('field_tos_acceptance')->value;
+        if ($current_value === NULL) {
+          $user->set('field_tos_acceptance', 0);
+          $user->save();
+        }
+      }
+    }
+  }
+}

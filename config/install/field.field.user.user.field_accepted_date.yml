@@ -1,0 +1,21 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.user.field_accepted_date
+  module:
+    - user
+    - datetime
+id: user.user.field_accepted_date
+field_name: field_accepted_date
+entity_type: user
+bundle: user
+label: 'TOS Accepted Date'
+description: 'The date and time when the user accepted the Terms of Service.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  timezone_override: ''
+field_type: datetime

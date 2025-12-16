@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### TOS fields and form
+  Creation of new TOS fields for acceptance and date. 
+  User fields are created but not shown in the user page initially.
+  
+  Sister PR: https://github.com/CuBoulder/tiamat-theme/pull/1727
+  Sister PR: https://github.com/CuBoulder/ucb_drush_commands/pull/7
+  Sister PR: https://github.com/CuBoulder/ucb_site_configuration/pull/100
+---
+
 - ### Adding IdentiKey field to the User entity
   Add `field_identikey` field to user configuration
   Set that field based on `identikey` information provided in user invite

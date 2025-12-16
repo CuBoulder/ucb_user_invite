@@ -19,3 +19,13 @@ ucb_user_invite.settings_form:
     _permission: administer user invite
   options:
     _admin_route: true
+
+ucb_user_invite.tos_acceptance:
+  path: '/ucb-user-invite/tos-acceptance/accept'
+  defaults:
+    _controller: '\Drupal\ucb_user_invite\Controller\TosAcceptanceController::accept'
+  requirements:
+    _user_is_logged_in: 'TRUE'
+    _format: 'json'
+    _csrf_request_header_token: 'TRUE'
+  methods: [POST]
