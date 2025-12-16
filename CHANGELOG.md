@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### #16 - Fixes link rendering incorrectly in Invite Email
+  Removes the wrapping `<a>` tag from the email body of a user invite, and instead lets the email client handle it
+  
+  Resolves #16 
+---
+
 - ### TOS fields and form
   Creation of new TOS fields for acceptance and date. 
   User fields are created but not shown in the user page initially.

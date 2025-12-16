@@ -28,7 +28,18 @@ function ucb_user_invite_mail($key, &$message, $params) {
       '%login_link%' => Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString(),
     ];
     $message['subject'] = $tokenService->replace(strtr($config->get($key . '_subject') ?? '', $variables), $tokens, $options);
-    $message['body'] = ['#markup' => $tokenService->replace(strtr($template, $variables), $tokens, $options)];
+    $rendered = $tokenService->replace(strtr($template, $variables), $tokens, $options);
+    // Convert only the login link to a plain URL, no <a> tags
+    $login_url = Url::fromUserInput('/user/login', ['absolute' => TRUE])->toString();
+    $rendered = preg_replace(
+      [
+        '#<a\s+[^>]*href=["\']' . preg_quote($login_url, '#') . '["\'][^>]*>.*?</a>#is',
+        '#<a\s+[^>]*href=["\']/user/login["\'][^>]*>.*?</a>#is',
+      ],
+      $login_url,
+      $rendered
+    );
+    $message['body'] = ['#markup' => $rendered];
   }
 }
 
