@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- ### ToS Decline Button
+  Add ToS decline/logout functionality to session variables.
+  Added decline button to the Terms of Service modal popup on the user page. If declined any session cookie (there shouldn't be one) created will be deleted and the user will be logged out.
+  
+  Sister PR: https://github.com/CuBoulder/tiamat-theme/pull/1765
+---
+
 - ### #16 - Fixes link rendering incorrectly in Invite Email
   Removes the wrapping `<a>` tag from the email body of a user invite, and instead lets the email client handle it
   

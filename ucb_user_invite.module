@@ -77,15 +77,23 @@ function ucb_user_invite_preprocess_page(&$variables) {
         // If TOS not accepted, attach the library to show modal.
         if (empty($tos_accepted)) {
           $variables['#attached']['library'][] = 'boulder_base/ucb-tos-acceptance';
+          $variables['#cache']['contexts'][] = 'session';
           
           // TOS URL from Web Central Website.
           $tos_url = 'https://www.colorado.edu/webcentral';
           
           // Pass settings to JavaScript.
+          $logout_token_path = 'user/logout';
+          $decline_url = Url::fromUserInput('/user/logout', [
+            'query' => ['token' => \Drupal::csrfToken()->get($logout_token_path)],
+            'absolute' => TRUE,
+          ])->toString();
+
           $variables['#attached']['drupalSettings']['ucb_tos_acceptance'] = [
             'show_modal' => TRUE,
             'tos_url' => $tos_url,
             'accept_url' => Url::fromRoute('ucb_user_invite.tos_acceptance')->toString(),
+            'decline_url' => $decline_url,
           ];
         }
       }
